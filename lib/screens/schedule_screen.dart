@@ -173,7 +173,8 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
                     const Expanded(
                       child: Text(
                         'Add Study Session',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     ),
                     IconButton(
@@ -187,12 +188,14 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
                   label: 'Subject',
                   value: _selectedSubjectId,
                   items: subjects
-                      .map<DropdownMenuItem<String>>((s) => DropdownMenuItem<String>(
-                            value: s.id,
-                            child: Text(s.subjectName),
-                          ))
+                      .map<DropdownMenuItem<String>>(
+                          (s) => DropdownMenuItem<String>(
+                                value: s.id,
+                                child: Text(s.subjectName),
+                              ))
                       .toList(growable: false),
-                  validator: (v) => v == null ? 'Please select a subject' : null,
+                  validator: (v) =>
+                      v == null ? 'Please select a subject' : null,
                   onChanged: (value) {
                     setState(() {
                       _selectedSubjectId = value;
@@ -205,13 +208,15 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
                   label: 'Topic',
                   value: _selectedTopicId,
                   items: topics
-                      .map<DropdownMenuItem<String>>((t) => DropdownMenuItem<String>(
-                            value: t.id,
-                            child: Text(t.topicName),
-                          ))
+                      .map<DropdownMenuItem<String>>(
+                          (t) => DropdownMenuItem<String>(
+                                value: t.id,
+                                child: Text(t.topicName),
+                              ))
                       .toList(growable: false),
                   validator: (v) => v == null ? 'Please select a topic' : null,
-                  onChanged: (value) => setState(() => _selectedTopicId = value),
+                  onChanged: (value) =>
+                      setState(() => _selectedTopicId = value),
                 ),
                 const SizedBox(height: 12),
                 const SizedBox(height: 2),
@@ -246,7 +251,8 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
                   decoration: InputDecoration(
                     labelText: 'Duration (minutes)',
                     prefixIcon: const Icon(Icons.timelapse_rounded),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16)),
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
@@ -286,10 +292,14 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
                         return;
                       }
 
-                      final subject = subjects.firstWhere((s) => s.id == _selectedSubjectId);
-                      final topic = subject.topics.firstWhere((t) => t.id == _selectedTopicId);
-                      final durationMinutes = int.parse(_durationController.text.trim());
-                      final timeMinutes = _selectedTime!.hour * 60 + _selectedTime!.minute;
+                      final subject = subjects
+                          .firstWhere((s) => s.id == _selectedSubjectId);
+                      final topic = subject.topics
+                          .firstWhere((t) => t.id == _selectedTopicId);
+                      final durationMinutes =
+                          int.parse(_durationController.text.trim());
+                      final timeMinutes =
+                          _selectedTime!.hour * 60 + _selectedTime!.minute;
 
                       await scheduleProvider.addSession(
                         subjectId: subject.id,
@@ -370,7 +380,8 @@ class _DropdownField extends StatelessWidget {
       decoration: InputDecoration(
         labelText: label,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       ),
     );
   }
@@ -484,7 +495,9 @@ class _ScheduleCard extends StatelessWidget {
             Row(
               children: [
                 Icon(
-                  isCompleted ? Icons.check_circle_rounded : Icons.radio_button_unchecked,
+                  isCompleted
+                      ? Icons.check_circle_rounded
+                      : Icons.radio_button_unchecked,
                   color: isCompleted ? Colors.green : subtitleColor,
                 ),
                 const SizedBox(width: 8),
@@ -538,7 +551,8 @@ class _InfoChip extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             text,
-            style: TextStyle(color: Colors.grey.shade800, fontWeight: FontWeight.w600),
+            style: TextStyle(
+                color: Colors.grey.shade800, fontWeight: FontWeight.w600),
           ),
         ],
       ),
@@ -557,7 +571,8 @@ class _EmptyScheduleState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.event_busy_rounded, size: 56, color: Colors.grey.shade500),
+            Icon(Icons.event_busy_rounded,
+                size: 56, color: Colors.grey.shade500),
             const SizedBox(height: 10),
             const Text(
               'No sessions scheduled',
