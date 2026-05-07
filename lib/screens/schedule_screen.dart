@@ -122,7 +122,8 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
     final scheduleProvider = context.read<ScheduleProvider>();
 
     final subjects = subjectProvider.subjects;
-    final selectedSubject = subjects.where((s) => s.id == _selectedSubjectId).cast().toList();
+    final selectedSubject =
+        subjects.where((s) => s.id == _selectedSubjectId).toList();
     final topics = selectedSubject.isEmpty ? [] : selectedSubject.first.topics;
 
     return SafeArea(
@@ -162,11 +163,11 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
                   label: 'Subject',
                   value: _selectedSubjectId,
                   items: subjects
-                      .map((s) => DropdownMenuItem(
+                      .map<DropdownMenuItem<String>>((s) => DropdownMenuItem<String>(
                             value: s.id,
                             child: Text(s.subjectName),
                           ))
-                      .toList(),
+                      .toList(growable: false),
                   validator: (v) => v == null ? 'Please select a subject' : null,
                   onChanged: (value) {
                     setState(() {
@@ -180,11 +181,11 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
                   label: 'Topic',
                   value: _selectedTopicId,
                   items: topics
-                      .map((t) => DropdownMenuItem(
+                      .map<DropdownMenuItem<String>>((t) => DropdownMenuItem<String>(
                             value: t.id,
                             child: Text(t.topicName),
                           ))
-                      .toList(),
+                      .toList(growable: false),
                   validator: (v) => v == null ? 'Please select a topic' : null,
                   onChanged: (value) => setState(() => _selectedTopicId = value),
                 ),
