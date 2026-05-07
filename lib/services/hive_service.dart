@@ -62,6 +62,16 @@ class HiveService {
     for (final key in topicKeysToDelete) {
       await _topicsBox.delete(key);
     }
+
+    // Also remove sessions that belong to the deleted subject.
+    final sessionKeysToDelete = _sessionsBox.keys.where((key) {
+      final session = _sessionsBox.get(key);
+      return session?.subjectId == subjectId;
+    }).toList();
+
+    for (final key in sessionKeysToDelete) {
+      await _sessionsBox.delete(key);
+    }
   }
 
   Future<void> addTopic(TopicModel topic) async {

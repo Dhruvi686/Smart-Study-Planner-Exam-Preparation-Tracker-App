@@ -7,6 +7,7 @@ class StudySessionModel {
   final String topicId;
   final String topicName;
   final String time;
+  final int timeMinutes; // hour*60 + minute (used for reminders)
   final DateTime date;
   final int durationMinutes;
   final bool isCompleted;
@@ -18,6 +19,7 @@ class StudySessionModel {
     required this.topicId,
     required this.topicName,
     required this.time,
+    required this.timeMinutes,
     required this.date,
     required this.durationMinutes,
     required this.isCompleted,
@@ -41,6 +43,8 @@ class StudySessionModelAdapter extends TypeAdapter<StudySessionModel> {
       date: DateTime.fromMillisecondsSinceEpoch(reader.readInt()),
       durationMinutes: reader.availableBytes > 0 ? reader.readInt() : 0,
       isCompleted: reader.availableBytes > 0 ? reader.readBool() : false,
+      // For older saved sessions, timeMinutes might not exist.
+      timeMinutes: reader.availableBytes > 0 ? reader.readInt() : 0,
     );
   }
 
@@ -55,6 +59,7 @@ class StudySessionModelAdapter extends TypeAdapter<StudySessionModel> {
       ..writeString(obj.time)
       ..writeInt(obj.date.millisecondsSinceEpoch)
       ..writeInt(obj.durationMinutes)
-      ..writeBool(obj.isCompleted);
+      ..writeBool(obj.isCompleted)
+      ..writeInt(obj.timeMinutes);
   }
 }

@@ -8,11 +8,36 @@ import 'dashboard_screen.dart';
 import 'search_screen.dart';
 import 'subject_screen.dart';
 
-class ScheduleScreen extends StatelessWidget {
+class ScheduleScreen extends StatefulWidget {
   const ScheduleScreen({super.key});
 
   @override
+  @override
+  State<ScheduleScreen> createState() => _ScheduleScreenState();
+}
+
+class _ScheduleScreenState extends State<ScheduleScreen> {
+  String? _shownReminder;
+
+  @override
   Widget build(BuildContext context) {
+    final reminder = context.watch<ScheduleProvider>().lastReminder;
+
+    if (reminder != null && reminder != _shownReminder) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        final provider = context.read<ScheduleProvider>();
+        if (!mounted) return;
+
+        if (provider.lastReminder == reminder) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(reminder)),
+          );
+          provider.clearReminder();
+          _shownReminder = reminder;
+        }
+      });
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Schedule'),
@@ -107,7 +132,6 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
 
   String? _selectedSubjectId;
   String? _selectedTopicId;
-  DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
 
   @override
@@ -190,47 +214,30 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
                   onChanged: (value) => setState(() => _selectedTopicId = value),
                 ),
                 const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _PickerField(
-                        label: 'Date',
-                        valueText: _selectedDate == null
-                            ? 'Select'
-                            : _formatDate(_selectedDate!),
-                        icon: Icons.calendar_today_rounded,
-                        onTap: () async {
-                          final now = DateTime.now();
-                          final picked = await showDatePicker(
-                            context: context,
-                            firstDate: DateTime(now.year - 1),
-                            lastDate: DateTime(now.year + 2),
-                            initialDate: _selectedDate ?? now,
-                          );
-                          if (picked == null) return;
-                          setState(() => _selectedDate = picked);
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _PickerField(
-                        label: 'Time',
-                        valueText: _selectedTime == null
-                            ? 'Select'
-                            : _selectedTime!.format(context),
-                        icon: Icons.schedule_rounded,
-                        onTap: () async {
-                          final picked = await showTimePicker(
-                            context: context,
-                            initialTime: _selectedTime ?? TimeOfDay.now(),
-                          );
-                          if (picked == null) return;
-                          setState(() => _selectedTime = picked);
-                        },
-                      ),
-                    ),
-                  ],
+                const SizedBox(height: 2),
+                _PickerField(
+                  label: 'Date',
+                  valueText: _formatDate(DateTime.now()),
+                  icon: Icons.calendar_today_rounded,
+                  onTap: () {
+                    // Date is fixed to today (no future date selection).
+                  },
+                ),
+                const SizedBox(height: 12),
+                _PickerField(
+                  label: 'Time',
+                  valueText: _selectedTime == null
+                      ? 'Select'
+                      : _selectedTime!.format(context),
+                  icon: Icons.schedule_rounded,
+                  onTap: () async {
+                    final picked = await showTimePicker(
+                      context: context,
+                      initialTime: _selectedTime ?? TimeOfDay.now(),
+                    );
+                    if (picked == null) return;
+                    setState(() => _selectedTime = picked);
+                  },
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
@@ -259,26 +266,39 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
                     onPressed: () async {
                       final ok = _formKey.currentState?.validate() ?? false;
                       if (!ok) return;
-                      if (_selectedDate == null) {
-                        _showSnack(context, 'Please select a date');
-                        return;
-                      }
                       if (_selectedTime == null) {
                         _showSnack(context, 'Please select a time');
+                        return;
+                      }
+
+                      final now = DateTime.now();
+                      final today = DateTime(now.year, now.month, now.day);
+                      final scheduled = DateTime(
+                        today.year,
+                        today.month,
+                        today.day,
+                        _selectedTime!.hour,
+                        _selectedTime!.minute,
+                      );
+
+                      if (scheduled.isBefore(now)) {
+                        _showSnack(context, 'Please select a future time');
                         return;
                       }
 
                       final subject = subjects.firstWhere((s) => s.id == _selectedSubjectId);
                       final topic = subject.topics.firstWhere((t) => t.id == _selectedTopicId);
                       final durationMinutes = int.parse(_durationController.text.trim());
+                      final timeMinutes = _selectedTime!.hour * 60 + _selectedTime!.minute;
 
                       await scheduleProvider.addSession(
                         subjectId: subject.id,
                         subjectName: subject.subjectName,
                         topicId: topic.id,
                         topicName: topic.topicName,
-                        date: _selectedDate!,
+                        date: today,
                         time: _selectedTime!.format(context),
+                        timeMinutes: timeMinutes,
                         durationMinutes: durationMinutes,
                       );
 
@@ -287,7 +307,6 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
                       setState(() {
                         _selectedSubjectId = null;
                         _selectedTopicId = null;
-                        _selectedDate = null;
                         _selectedTime = null;
                       });
 
